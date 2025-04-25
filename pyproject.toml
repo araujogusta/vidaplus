@@ -5,7 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.15.2",
     "fastapi[standard]>=0.115.12",
+    "psycopg[binary]>=3.2.6",
+    "pydantic>=2.11.3",
+    "pydantic-settings>=2.9.1",
+    "sqlalchemy>=2.0.40",
 ]
 
 [dependency-groups]
@@ -40,3 +45,4 @@ check_untyped_defs = true
 warn_return_any = true
 warn_unused_ignores = true
 show_error_codes = true
+plugins = ["pydantic.mypy"]
