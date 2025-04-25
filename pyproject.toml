@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi[standard]>=0.115.12",
+]
 
 [dependency-groups]
 dev = [
@@ -16,6 +18,7 @@ dev = [
 ]
 
 [tool.taskipy.tasks]
+dev = "fastapi dev vidaplus/run.py"
 lint = "ruff check ."
 format = "ruff check . --fix && ruff format ."
 test = "pytest --cov=vidaplus -x -s . -vv"
