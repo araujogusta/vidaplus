@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, StaticPool, create_engine
 
 from vidaplus.main.enums.roles import Roles
+from vidaplus.main.schemas.user import UserSchema
 from vidaplus.models.config.base import Base
 from vidaplus.models.config.connection import DatabaseConnectionHandler
 from vidaplus.models.entities.user import User
@@ -34,7 +35,7 @@ def client(engine: Engine) -> Generator[TestClient, None, None]:
 
 
 @pytest.fixture
-def patient(engine: Engine) -> None:
+def patient(engine: Engine) -> UserSchema:
     user = User(
         name='John Doe',
         email='johndoe@example.com',
@@ -45,3 +46,6 @@ def patient(engine: Engine) -> None:
     with DatabaseConnectionHandler() as db:
         db.session.add(user)
         db.session.commit()
+        db.session.refresh(user)
+
+    return UserSchema.model_validate(user)
