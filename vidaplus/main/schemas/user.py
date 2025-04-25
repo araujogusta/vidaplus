@@ -1,7 +1,8 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+import bcrypt
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from vidaplus.main.enums.roles import Roles
 
@@ -17,10 +18,18 @@ class RequestCreateUserSchema(BaseModel):
 class CreateUserSchema(RequestCreateUserSchema):
     role: Roles
 
+    @field_validator('password')
+    @classmethod
+    def hash_password(cls, password: str) -> str:
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
 
 class UserSchema(CreateUserSchema):
     id: UUID
     created_at: datetime
+
+    def verify_password(self, password: str) -> bool:
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
 
 
 class PublicUserSchema(UserSchema):
