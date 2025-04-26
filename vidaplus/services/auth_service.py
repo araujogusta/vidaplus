@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import jwt
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 
 from vidaplus.main.exceptions import ExpiredTokenError, InvalidTokenError, TokenRefreshError
 from vidaplus.main.schemas.auth import TokenData
@@ -10,6 +12,7 @@ from vidaplus.settings import Settings
 
 class AuthService:
     settings = Settings()
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl='api/auth/token')
 
     @classmethod
     def create_access_token(cls, data: dict) -> str:
@@ -44,3 +47,7 @@ class AuthService:
             return new_access_token
         except Exception:
             raise TokenRefreshError()
+
+    @classmethod
+    def get_current_user(cls, token: str = Depends(oauth2_scheme)) -> TokenData:
+        return cls.decode_access_token(token)
