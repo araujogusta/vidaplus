@@ -1,5 +1,5 @@
 from vidaplus.main.enums.roles import Roles
-from vidaplus.main.exceptions import PermissionRequiredError, AuthenticationError, EmailAlreadyExistsError
+from vidaplus.main.exceptions import AuthenticationError, EmailAlreadyExistsError, PermissionRequiredError
 from vidaplus.main.schemas.user import CreateUserSchema, PublicUserSchema, RequestCreateUserSchema
 from vidaplus.models.repositories.interfaces.user_repository_interface import UserRepositoryInterface
 from vidaplus.services.auth_service import AuthService

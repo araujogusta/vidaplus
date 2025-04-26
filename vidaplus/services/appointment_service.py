@@ -18,7 +18,7 @@ class AppointmentService:
 
         if not appointment.date_time > datetime.now():
             raise SchedulingInPastError()
-        
+
         if self.has_time_conflict(appointment.professional_id, appointment.date_time, appointment.estimated_duration):
             raise SchedulingTimeConflictError()
 
@@ -30,9 +30,11 @@ class AppointmentService:
 
         for existing_appointment in existing_appointments:
             existing_appointment_start = existing_appointment.date_time
-            existing_appointment_end = existing_appointment_start + timedelta(minutes=existing_appointment.estimated_duration)
+            existing_appointment_end = existing_appointment_start + timedelta(
+                minutes=existing_appointment.estimated_duration
+            )
 
             if (appointment_start <= existing_appointment_start) and (appointment_end >= existing_appointment_end):
                 return True
-            
+
         return False

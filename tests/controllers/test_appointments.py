@@ -130,7 +130,11 @@ def test_create_appointment_with_missing_fields(client: TestClient, token: str) 
 
 
 def test_patient_creating_appointment_for_another_patient(
-    client: TestClient, another_patient: UserSchema, healthcare_profissional: UserSchema, token: str, date_in_future: str
+    client: TestClient,
+    another_patient: UserSchema,
+    healthcare_profissional: UserSchema,
+    token: str,
+    date_in_future: str,
 ) -> None:
     data = {
         'patient_id': str(another_patient.id),

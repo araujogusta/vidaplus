@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from sqlalchemy import select
+
 from vidaplus.main.schemas.appointment import AppointmentSchema, CreateAppointmentSchema
 from vidaplus.models.config.connection import DatabaseConnectionHandler
 from vidaplus.models.entities.appointment import Appointment
@@ -19,7 +20,7 @@ class AppointmentRepository(AppointmentRepositoryInterface):
             except Exception as e:
                 db.session.rollback()
                 raise e
-    
+
     def get_by_professional_id(self, professional_id: UUID) -> list[AppointmentSchema]:
         with DatabaseConnectionHandler() as db:
             try:

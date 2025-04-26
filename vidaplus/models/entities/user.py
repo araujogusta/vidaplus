@@ -28,5 +28,8 @@ class User(Base):
         'Appointment', back_populates='patient', foreign_keys='[Appointment.patient_id]', cascade='all, delete-orphan'
     )
     professional_appointments: Mapped[list['Appointment']] = relationship(
-        'Appointment', back_populates='professional', foreign_keys='[Appointment.professional_id]', cascade='all, delete-orphan'
+        'Appointment',
+        back_populates='professional',
+        foreign_keys='[Appointment.professional_id]',
+        cascade='all, delete-orphan',
     )

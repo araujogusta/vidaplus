@@ -67,7 +67,7 @@ def another_patient(engine: Engine) -> UserSchema:
         db.session.add(user)
         db.session.commit()
         db.session.refresh(user)
-        
+
     return UserSchema.model_validate(user)
 
 

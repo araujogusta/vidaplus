@@ -34,4 +34,6 @@ class Appointment(Base):
     professional_id: Mapped[UUID] = mapped_column(ForeignKey('user.id'))
 
     patient: Mapped['User'] = relationship('User', foreign_keys=[patient_id], back_populates='patient_appointments')
-    professional: Mapped['User'] = relationship('User', foreign_keys=[professional_id], back_populates='professional_appointments')
+    professional: Mapped['User'] = relationship(
+        'User', foreign_keys=[professional_id], back_populates='professional_appointments'
+    )
