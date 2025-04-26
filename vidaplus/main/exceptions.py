@@ -40,8 +40,22 @@ class TokenRefreshError(ApplicationError):
         super().__init__('Não foi possível atualizar o token')
 
 
-class AdminRoleRequiredError(ApplicationError):
+class PermissionRequiredError(ApplicationError):
     code = HTTPStatus.FORBIDDEN
 
     def __init__(self) -> None:
         super().__init__('Você não tem permissão para acessar este recurso')
+
+
+class SchedulingInPastError(ApplicationError):
+    code = HTTPStatus.BAD_REQUEST
+
+    def __init__(self) -> None:
+        super().__init__('Não é possível agendar no passado')
+
+
+class SchedulingTimeConflictError(ApplicationError):
+    code = HTTPStatus.CONFLICT
+
+    def __init__(self) -> None:
+        super().__init__('Já existe um agendamento no mesmo horário')

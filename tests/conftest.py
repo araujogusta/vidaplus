@@ -1,3 +1,5 @@
+import random
+from datetime import datetime, timedelta
 from typing import Generator
 
 import pytest
@@ -53,6 +55,23 @@ def patient(engine: Engine) -> UserSchema:
 
 
 @pytest.fixture
+def another_patient(engine: Engine) -> UserSchema:
+    user = User(
+        name='Jane Doe',
+        email='janedoe@example.com',
+        password='ilovepotatos',
+        role=Roles.PATIENT,
+    )
+
+    with DatabaseConnectionHandler() as db:
+        db.session.add(user)
+        db.session.commit()
+        db.session.refresh(user)
+        
+    return UserSchema.model_validate(user)
+
+
+@pytest.fixture
 def admin(engine: Engine) -> UserSchema:
     user = User(
         name='Admin',
@@ -89,3 +108,26 @@ def admin_token(client: TestClient, admin: UserSchema) -> str:
 
     response = client.post('/api/auth/token', json=data)
     return ResponseAuthToken(**response.json()).access_token
+
+
+@pytest.fixture
+def healthcare_profissional(engine: Engine) -> UserSchema:
+    user = User(
+        name='Healthcare Professional',
+        email='healthcareprofessional@example.com',
+        password='iloveapples',
+        role=Roles.HEALTHCARE_PROFESSIONAL,
+    )
+
+    with DatabaseConnectionHandler() as db:
+        db.session.add(user)
+        db.session.commit()
+        db.session.refresh(user)
+
+        return UserSchema.model_validate(user)
+
+
+@pytest.fixture
+def date_in_future() -> str:
+    future_date = datetime.now() + timedelta(days=random.randint(1, 30))
+    return future_date.isoformat()

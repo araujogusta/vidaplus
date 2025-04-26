@@ -1,5 +1,5 @@
 from vidaplus.main.enums.roles import Roles
-from vidaplus.main.exceptions import AdminRoleRequiredError, AuthenticationError, EmailAlreadyExistsError
+from vidaplus.main.exceptions import PermissionRequiredError, AuthenticationError, EmailAlreadyExistsError
 from vidaplus.main.schemas.user import CreateUserSchema, PublicUserSchema, RequestCreateUserSchema
 from vidaplus.models.repositories.interfaces.user_repository_interface import UserRepositoryInterface
 from vidaplus.services.auth_service import AuthService
@@ -27,7 +27,7 @@ class UserService:
     ) -> PublicUserSchema:
         try:
             if not creator.role == Roles.ADMIN:
-                raise AdminRoleRequiredError()
+                raise PermissionRequiredError()
 
             email_already_exists = self.repository.get_by_email(new_user.email)
             if email_already_exists:
