@@ -53,6 +53,23 @@ def patient(engine: Engine) -> UserSchema:
 
 
 @pytest.fixture
+def admin(engine: Engine) -> UserSchema:
+    user = User(
+        name='Admin',
+        email='admin@example.com',
+        password='ilovepotatos',
+        role=Roles.ADMIN,
+    )
+
+    with DatabaseConnectionHandler() as db:
+        db.session.add(user)
+        db.session.commit()
+        db.session.refresh(user)
+
+    return UserSchema.model_validate(user)
+
+
+@pytest.fixture
 def token(client: TestClient, patient: UserSchema) -> str:
     data = {
         'email': 'johndoe@example.com',
@@ -60,5 +77,15 @@ def token(client: TestClient, patient: UserSchema) -> str:
     }
 
     response = client.post('/api/auth/token', json=data)
+    return ResponseAuthToken(**response.json()).access_token
 
+
+@pytest.fixture
+def admin_token(client: TestClient, admin: UserSchema) -> str:
+    data = {
+        'email': 'admin@example.com',
+        'password': 'ilovepotatos',
+    }
+
+    response = client.post('/api/auth/token', json=data)
     return ResponseAuthToken(**response.json()).access_token
