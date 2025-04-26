@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException, Request
 
-from vidaplus.controllers import patients
+from vidaplus.controllers import auth, patients
 from vidaplus.main.exceptions import ApplicationError
 
 app = FastAPI(title='SSGHSS VidaPlus')
+app.include_router(auth.router)
 app.include_router(patients.router)
 
 
