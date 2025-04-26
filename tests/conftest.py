@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, StaticPool, create_engine
 
 from vidaplus.main.enums.roles import Roles
+from vidaplus.main.schemas.auth import ResponseAuthToken
 from vidaplus.main.schemas.user import UserSchema
 from vidaplus.models.config.base import Base
 from vidaplus.models.config.connection import DatabaseConnectionHandler
@@ -49,3 +50,15 @@ def patient(engine: Engine) -> UserSchema:
         db.session.refresh(user)
 
     return UserSchema.model_validate(user)
+
+
+@pytest.fixture
+def token(client: TestClient, patient: UserSchema) -> str:
+    data = {
+        'email': 'johndoe@example.com',
+        'password': 'ilovepotatos',
+    }
+
+    response = client.post('/api/auth/token', json=data)
+
+    return ResponseAuthToken(**response.json()).access_token
