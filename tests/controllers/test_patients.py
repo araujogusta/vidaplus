@@ -1,8 +1,10 @@
 from http import HTTPStatus
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from vidaplus.main.enums.roles import Roles
 from vidaplus.main.schemas.user import UserSchema
 from vidaplus.models.config.connection import DatabaseConnectionHandler
 from vidaplus.models.entities.user import User
@@ -61,3 +63,55 @@ def test_patient_password_is_hashed(client: TestClient, patient: UserSchema) -> 
     assert user_data is not None
     assert user_data.password != patient.password
     assert patient.verify_password(user_data.password)
+
+
+def test_get_all_patients(client: TestClient, patient: UserSchema, another_patient: UserSchema) -> None:
+    PATIENTS_COUNT = 2
+
+    response = client.get('/api/pacientes')
+    response_data = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(response_data) == PATIENTS_COUNT
+    assert response_data[0]['name'] == patient.name
+    assert response_data[0]['email'] == patient.email
+    assert response_data[0]['role'] == 'PATIENT'
+    assert response_data[1]['name'] == another_patient.name
+    assert response_data[1]['email'] == another_patient.email
+    assert response_data[1]['role'] == Roles.PATIENT
+    assert 'password' not in response_data[0]
+    assert 'password' not in response_data[1]
+    assert 'created_at' in response_data[0]
+    assert 'created_at' in response_data[1]
+    assert 'id' in response_data[0]
+    assert 'id' in response_data[1]
+
+
+def test_get_all_patients_with_no_patients(client: TestClient) -> None:
+    response = client.get('/api/pacientes')
+    response_data = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(response_data) == 0
+
+
+def test_get_patient_by_id(client: TestClient, patient: UserSchema) -> None:
+    response = client.get(f'/api/pacientes/{patient.id}')
+    response_data = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert response_data['name'] == patient.name
+    assert response_data['email'] == patient.email
+    assert response_data['role'] == Roles.PATIENT
+    assert 'password' not in response_data
+    assert 'created_at' in response_data
+    assert 'id' in response_data
+    assert response_data['id'] == str(patient.id)
+
+
+def test_get_patient_by_id_with_invalid_id(client: TestClient) -> None:
+    response = client.get(f'/api/pacientes/{uuid4()}')
+    response_data = response.json()
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response_data['detail'] == 'Paciente não encontrado'
