@@ -1,5 +1,12 @@
+from uuid import UUID
+
 from vidaplus.main.enums.roles import Roles
-from vidaplus.main.exceptions import AuthenticationError, EmailAlreadyExistsError, PermissionRequiredError
+from vidaplus.main.exceptions import (
+    AuthenticationError,
+    EmailAlreadyExistsError,
+    PatientNotFoundError,
+    PermissionRequiredError,
+)
 from vidaplus.main.schemas.user import CreateUserSchema, PublicUserSchema, RequestCreateUserSchema
 from vidaplus.models.repositories.interfaces.user_repository_interface import UserRepositoryInterface
 from vidaplus.services.auth_service import AuthService
@@ -48,3 +55,15 @@ class UserService:
         public_user = PublicUserSchema(**user.model_dump())
         access_token = AuthService.create_access_token(public_user.model_dump())
         return access_token
+
+    def all(self, role: Roles) -> list[PublicUserSchema]:
+        users = self.repository.get_all(role)
+        return [PublicUserSchema(**user.model_dump()) for user in users]
+
+    def get_by_id(self, user_id: UUID) -> PublicUserSchema:
+        user = self.repository.get_by_id(user_id)
+
+        if not user:
+            raise PatientNotFoundError()
+
+        return PublicUserSchema(**user.model_dump())

@@ -1,5 +1,9 @@
+from typing import Optional
+from uuid import UUID
+
 from sqlalchemy import select
 
+from vidaplus.main.enums.roles import Roles
 from vidaplus.main.schemas.user import CreateUserSchema, UserSchema
 from vidaplus.models.config.connection import DatabaseConnectionHandler
 from vidaplus.models.entities.user import User
@@ -19,11 +23,33 @@ class UserRepository(UserRepositoryInterface):
                 db.session.rollback()
                 raise ex
 
+    def get_all(self, role: Optional[Roles] = None) -> list[UserSchema]:
+        with DatabaseConnectionHandler() as db:
+            try:
+                query = select(User)
+
+                if role:
+                    query = query.filter(User.role == role)
+
+                users = db.session.scalars(query).all()
+                return [UserSchema.model_validate(user) for user in users]
+            except Exception as ex:
+                db.session.rollback()
+                raise ex
+
     def get_by_email(self, email: str) -> UserSchema | None:
         with DatabaseConnectionHandler() as db:
             try:
                 user = db.session.scalar(select(User).where(User.email == email))
+                return UserSchema.model_validate(user) if user else None
+            except Exception as ex:
+                db.session.rollback()
+                raise ex
 
+    def get_by_id(self, user_id: UUID) -> UserSchema | None:
+        with DatabaseConnectionHandler() as db:
+            try:
+                user = db.session.scalar(select(User).where(User.id == user_id))
                 return UserSchema.model_validate(user) if user else None
             except Exception as ex:
                 db.session.rollback()
