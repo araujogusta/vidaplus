@@ -38,3 +38,10 @@ class TokenRefreshError(ApplicationError):
 
     def __init__(self) -> None:
         super().__init__('Não foi possível atualizar o token')
+
+
+class AdminRoleRequiredError(ApplicationError):
+    code = HTTPStatus.FORBIDDEN
+
+    def __init__(self) -> None:
+        super().__init__('Você não tem permissão para acessar este recurso')
