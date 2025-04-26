@@ -1,7 +1,8 @@
 from vidaplus.main.enums.roles import Roles
-from vidaplus.main.exceptions import EmailAlreadyExistsError
+from vidaplus.main.exceptions import AuthenticationError, EmailAlreadyExistsError
 from vidaplus.main.schemas.user import CreateUserSchema, PublicUserSchema, RequestCreateUserSchema
 from vidaplus.models.repositories.interfaces.user_repository_interface import UserRepositoryInterface
+from vidaplus.services.auth_service import AuthService
 
 
 class UserService:
@@ -20,3 +21,13 @@ class UserService:
             return PublicUserSchema(**created_user.model_dump())
         except Exception as e:
             raise e
+
+    def authenticate(self, email: str, password: str) -> str:
+        user = self.repository.get_by_email(email)
+
+        if not user or not user.verify_password(password):
+            raise AuthenticationError()
+
+        public_user = PublicUserSchema(**user.model_dump())
+        access_token = AuthService.create_access_token(public_user.model_dump())
+        return access_token
