@@ -61,8 +61,8 @@ class SchedulingTimeConflictError(ApplicationError):
         super().__init__('Já existe um agendamento no mesmo horário')
 
 
-class PatientNotFoundError(ApplicationError):
+class NotFoundError(ApplicationError):
     code = HTTPStatus.NOT_FOUND
 
     def __init__(self) -> None:
-        super().__init__('Paciente não encontrado')
+        super().__init__('Usuário não encontrado')

@@ -5,7 +5,8 @@ import jwt
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from vidaplus.main.exceptions import ExpiredTokenError, InvalidTokenError, TokenRefreshError
+from vidaplus.main.enums.roles import Roles
+from vidaplus.main.exceptions import ExpiredTokenError, InvalidTokenError, PermissionRequiredError, TokenRefreshError
 from vidaplus.main.schemas.auth import TokenData
 from vidaplus.settings import Settings
 
@@ -51,3 +52,10 @@ class AuthService:
     @classmethod
     def get_current_user(cls, token: str = Depends(oauth2_scheme)) -> TokenData:
         return cls.decode_access_token(token)
+
+    @classmethod
+    def is_admin(cls, token: str = Depends(oauth2_scheme)) -> None:
+        payload = cls.decode_access_token(token)
+
+        if not payload.role == Roles.ADMIN:
+            raise PermissionRequiredError()

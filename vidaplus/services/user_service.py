@@ -4,7 +4,7 @@ from vidaplus.main.enums.roles import Roles
 from vidaplus.main.exceptions import (
     AuthenticationError,
     EmailAlreadyExistsError,
-    PatientNotFoundError,
+    NotFoundError,
     PermissionRequiredError,
 )
 from vidaplus.main.schemas.user import CreateUserSchema, PublicUserSchema, RequestCreateUserSchema
@@ -64,6 +64,6 @@ class UserService:
         user = self.repository.get_by_id(user_id)
 
         if not user:
-            raise PatientNotFoundError()
+            raise NotFoundError()
 
         return PublicUserSchema(**user.model_dump())

@@ -111,7 +111,7 @@ def admin_token(client: TestClient, admin: UserSchema) -> str:
 
 
 @pytest.fixture
-def healthcare_profissional(engine: Engine) -> UserSchema:
+def healthcare_professional(engine: Engine) -> UserSchema:
     user = User(
         name='Healthcare Professional',
         email='healthcareprofessional@example.com',
@@ -125,6 +125,23 @@ def healthcare_profissional(engine: Engine) -> UserSchema:
         db.session.refresh(user)
 
         return UserSchema.model_validate(user)
+
+
+@pytest.fixture
+def another_healthcare_professional(engine: Engine) -> UserSchema:
+    user = User(
+        name='Another Healthcare Professional',
+        email='anotherhealthcareprofessional@example.com',
+        password='iloveapples',
+        role=Roles.HEALTHCARE_PROFESSIONAL,
+    )
+
+    with DatabaseConnectionHandler() as db:
+        db.session.add(user)
+        db.session.commit()
+        db.session.refresh(user)
+
+    return UserSchema.model_validate(user)
 
 
 @pytest.fixture

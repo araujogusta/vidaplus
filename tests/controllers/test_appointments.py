@@ -10,11 +10,11 @@ from vidaplus.main.schemas.user import UserSchema
 
 
 def test_create_appointment(
-    client: TestClient, patient: UserSchema, healthcare_profissional: UserSchema, token: str, date_in_future: str
+    client: TestClient, patient: UserSchema, healthcare_professional: UserSchema, token: str, date_in_future: str
 ) -> None:
     data = {
         'patient_id': str(patient.id),
-        'professional_id': str(healthcare_profissional.id),
+        'professional_id': str(healthcare_professional.id),
         'date_time': date_in_future,
         'type': AppointmentTypes.CONSULTATION,
         'status': AppointmentStatus.SCHEDULED,
@@ -59,11 +59,11 @@ def test_create_appointment_without_authorization(client: TestClient, date_in_fu
 
 
 def test_create_appointment_with_invalid_patient_id(
-    client: TestClient, healthcare_profissional: UserSchema, token: str, date_in_future: str
+    client: TestClient, healthcare_professional: UserSchema, token: str, date_in_future: str
 ) -> None:
     data = {
         'patient_id': 'invalid-uuid-123',
-        'professional_id': str(healthcare_profissional.id),
+        'professional_id': str(healthcare_professional.id),
         'date_time': date_in_future,
         'type': AppointmentTypes.CONSULTATION,
         'status': AppointmentStatus.SCHEDULED,
@@ -78,13 +78,13 @@ def test_create_appointment_with_invalid_patient_id(
 
 
 def test_create_appointment_with_past_date(
-    client: TestClient, patient: UserSchema, healthcare_profissional: UserSchema, token: str
+    client: TestClient, patient: UserSchema, healthcare_professional: UserSchema, token: str
 ) -> None:
     date_in_past = datetime.now() - timedelta(days=random.randint(1, 30))
 
     data = {
         'patient_id': str(patient.id),
-        'professional_id': str(healthcare_profissional.id),
+        'professional_id': str(healthcare_professional.id),
         'date_time': date_in_past.isoformat(),
         'type': AppointmentTypes.CONSULTATION,
         'status': AppointmentStatus.SCHEDULED,
@@ -99,11 +99,11 @@ def test_create_appointment_with_past_date(
 
 
 def test_create_conflicting_appointment(
-    client: TestClient, patient: UserSchema, healthcare_profissional: UserSchema, token: str, date_in_future: str
+    client: TestClient, patient: UserSchema, healthcare_professional: UserSchema, token: str, date_in_future: str
 ) -> None:
     base_data = {
         'patient_id': str(patient.id),
-        'professional_id': str(healthcare_profissional.id),
+        'professional_id': str(healthcare_professional.id),
         'date_time': date_in_future,
         'type': AppointmentTypes.CONSULTATION,
         'status': AppointmentStatus.SCHEDULED,
@@ -132,13 +132,13 @@ def test_create_appointment_with_missing_fields(client: TestClient, token: str) 
 def test_patient_creating_appointment_for_another_patient(
     client: TestClient,
     another_patient: UserSchema,
-    healthcare_profissional: UserSchema,
+    healthcare_professional: UserSchema,
     token: str,
     date_in_future: str,
 ) -> None:
     data = {
         'patient_id': str(another_patient.id),
-        'professional_id': str(healthcare_profissional.id),
+        'professional_id': str(healthcare_professional.id),
         'date_time': date_in_future,
         'type': AppointmentTypes.CONSULTATION,
         'status': AppointmentStatus.SCHEDULED,

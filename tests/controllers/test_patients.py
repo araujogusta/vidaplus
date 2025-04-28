@@ -114,4 +114,4 @@ def test_get_patient_by_id_with_invalid_id(client: TestClient) -> None:
     response_data = response.json()
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response_data['detail'] == 'Paciente não encontrado'
+    assert response_data['detail'] == 'Usuário não encontrado'
