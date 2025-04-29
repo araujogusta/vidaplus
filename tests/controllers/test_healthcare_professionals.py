@@ -4,6 +4,7 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 
 from vidaplus.main.enums.roles import Roles
+from vidaplus.main.schemas.appointment import AppointmentSchema
 from vidaplus.main.schemas.user import UserSchema
 
 
@@ -116,3 +117,29 @@ def test_get_healthcare_professional_by_id_not_found(client: TestClient, admin_t
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response_data['detail'] == 'Usuário não encontrado'
+
+
+def test_list_healthcare_professional_appointments(
+    client: TestClient,
+    healthcare_professional: UserSchema,
+    appointment: AppointmentSchema,
+    healthcare_professional_token: str,
+) -> None:
+    response = client.get(
+        f'/api/profissionais/{healthcare_professional.id}/agendamentos',
+        headers={'Authorization': f'Bearer {healthcare_professional_token}'},
+    )
+    response_data = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(response_data) == 1
+
+    appt = response_data[0]
+
+    assert appt['id'] == appointment.id
+    assert appt['date_time'] == appointment.date_time.isoformat()
+    assert appt['status'] == appointment.status
+    assert appt['patient_id'] == str(appointment.patient_id)
+    assert appt['professional_id'] == str(appointment.professional_id)
+    assert appt['created_at'] == appointment.created_at.isoformat()
+    assert appt['updated_at'] == appointment.updated_at.isoformat()

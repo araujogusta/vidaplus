@@ -6,11 +6,15 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, StaticPool, create_engine
 
+from vidaplus.main.enums.appointment_status import AppointmentStatus
+from vidaplus.main.enums.appointment_types import AppointmentTypes
 from vidaplus.main.enums.roles import Roles
+from vidaplus.main.schemas.appointment import AppointmentSchema
 from vidaplus.main.schemas.auth import ResponseAuthToken
 from vidaplus.main.schemas.user import UserSchema
 from vidaplus.models.config.base import Base
 from vidaplus.models.config.connection import DatabaseConnectionHandler
+from vidaplus.models.entities.appointment import Appointment
 from vidaplus.models.entities.user import User
 from vidaplus.run import app
 from vidaplus.settings import Settings
@@ -153,6 +157,27 @@ def healthcare_professional_token(client: TestClient, healthcare_professional: U
 
     response = client.post('/api/auth/token', json=data)
     return ResponseAuthToken(**response.json()).access_token
+
+
+@pytest.fixture
+def appointment(engine: Engine, patient: UserSchema, healthcare_professional: UserSchema) -> AppointmentSchema:
+    appointment = Appointment(
+        patient_id=patient.id,
+        professional_id=healthcare_professional.id,
+        type=AppointmentTypes.CONSULTATION,
+        status=AppointmentStatus.SCHEDULED,
+        notes='Agendamento genérico',
+        date_time=datetime.now() + timedelta(minutes=30),
+        estimated_duration=30,
+        location='Sala 1',
+    )
+
+    with DatabaseConnectionHandler() as db:
+        db.session.add(appointment)
+        db.session.commit()
+        db.session.refresh(appointment)
+
+    return AppointmentSchema.model_validate(appointment)
 
 
 @pytest.fixture
