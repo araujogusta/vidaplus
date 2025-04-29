@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import select
@@ -21,13 +23,38 @@ class AppointmentRepository(AppointmentRepositoryInterface):
                 db.session.rollback()
                 raise e
 
-    def get_by_professional_id(self, professional_id: UUID) -> list[AppointmentSchema]:
+    def get(  # noqa: PLR0913
+        self,
+        patient_id: Optional[UUID] = None,
+        professional_id: Optional[UUID] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        type: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> list[AppointmentSchema]:
+        query = select(Appointment)
+
+        if patient_id:
+            query = query.filter(Appointment.patient_id == patient_id)
+
+        if professional_id:
+            query = query.filter(Appointment.professional_id == professional_id)
+
+        if start_date:
+            query = query.filter(Appointment.date_time > start_date)
+
+        if end_date:
+            query = query.filter(Appointment.date_time < end_date)
+
+        if type:
+            query = query.filter(Appointment.type == type)
+
+        if status:
+            query = query.filter(Appointment.status == status)
+
         with DatabaseConnectionHandler() as db:
             try:
-                appointments = db.session.scalars(
-                    select(Appointment).where(Appointment.professional_id == professional_id)
-                )
-
+                appointments = db.session.scalars(query).all()
                 return [AppointmentSchema.model_validate(appointment) for appointment in appointments]
             except Exception as e:
                 db.session.rollback()

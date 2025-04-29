@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 from uuid import UUID
 
 from vidaplus.main.enums.roles import Roles
@@ -24,9 +25,27 @@ class AppointmentService:
 
         return self.repository.create(appointment)
 
+    def get(  # noqa: PLR0913
+        self,
+        patient_id: Optional[UUID] = None,
+        professional_id: Optional[UUID] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        type: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> list[AppointmentSchema]:
+        return self.repository.get(
+            patient_id=patient_id,
+            professional_id=professional_id,
+            start_date=start_date,
+            end_date=end_date,
+            type=type,
+            status=status,
+        )
+
     def has_time_conflict(self, professional_id: UUID, appointment_start: datetime, duration: int) -> bool:
         appointment_end = appointment_start + timedelta(minutes=duration)
-        existing_appointments = self.repository.get_by_professional_id(professional_id)
+        existing_appointments = self.repository.get(professional_id=professional_id)
 
         for existing_appointment in existing_appointments:
             existing_appointment_start = existing_appointment.date_time

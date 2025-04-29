@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from vidaplus.main.schemas.appointment import AppointmentSchema, CreateAppointmentSchema
@@ -10,5 +12,13 @@ class AppointmentRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    def get_by_professional_id(self, professional_id: UUID) -> list[AppointmentSchema]:
+    def get(  # noqa: PLR0913
+        self,
+        patient_id: Optional[UUID] = None,
+        professional_id: Optional[UUID] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        type: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> list[AppointmentSchema]:
         pass
