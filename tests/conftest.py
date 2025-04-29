@@ -145,6 +145,17 @@ def another_healthcare_professional(engine: Engine) -> UserSchema:
 
 
 @pytest.fixture
+def healthcare_professional_token(client: TestClient, healthcare_professional: UserSchema) -> str:
+    data = {
+        'email': 'healthcareprofessional@example.com',
+        'password': 'iloveapples',
+    }
+
+    response = client.post('/api/auth/token', json=data)
+    return ResponseAuthToken(**response.json()).access_token
+
+
+@pytest.fixture
 def date_in_future() -> str:
     future_date = datetime.now() + timedelta(days=random.randint(1, 30))
     return future_date.isoformat()

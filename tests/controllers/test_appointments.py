@@ -150,3 +150,201 @@ def test_patient_creating_appointment_for_another_patient(
     response = client.post('/api/agendamentos', json=data, headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert 'Você não tem permissão para acessar este recurso' in response.json()['detail']
+
+
+def test_healthcare_professional_creating_appointment_for_a_patient(
+    client: TestClient,
+    patient: UserSchema,
+    healthcare_professional: UserSchema,
+    token: str,
+    date_in_future: str,
+) -> None:
+    APPOINTMENT_DURATION_IN_MINUTES = 30
+    data = {
+        'patient_id': str(patient.id),
+        'professional_id': str(healthcare_professional.id),
+        'date_time': date_in_future,
+        'type': AppointmentTypes.CONSULTATION,
+        'status': AppointmentStatus.SCHEDULED,
+        'estimated_duration': APPOINTMENT_DURATION_IN_MINUTES,
+        'location': 'Sala 205',
+        'notes': 'Agendamento criado pelo profissional',
+    }
+
+    response = client.post('/api/agendamentos', json=data, headers={'Authorization': f'Bearer {token}'})
+    response_data = response.json()
+
+    assert response.status_code == HTTPStatus.CREATED
+    assert response_data['patient_id'] == str(patient.id)
+    assert response_data['professional_id'] == str(healthcare_professional.id)
+    assert response_data['type'] == AppointmentTypes.CONSULTATION
+    assert response_data['status'] == AppointmentStatus.SCHEDULED
+    assert response_data['estimated_duration'] == APPOINTMENT_DURATION_IN_MINUTES
+    assert response_data['location'] == 'Sala 205'
+    assert response_data['notes'] == 'Agendamento criado pelo profissional'
+
+
+def test_admin_creating_appointment_for_a_patient(
+    client: TestClient,
+    patient: UserSchema,
+    healthcare_professional: UserSchema,
+    admin_token: str,
+    date_in_future: str,
+) -> None:
+    APPOINTMENT_DURATION_IN_MINUTES = 30
+    data = {
+        'patient_id': str(patient.id),
+        'professional_id': str(healthcare_professional.id),
+        'date_time': date_in_future,
+        'type': AppointmentTypes.CONSULTATION,
+        'status': AppointmentStatus.SCHEDULED,
+        'estimated_duration': APPOINTMENT_DURATION_IN_MINUTES,
+        'location': 'Sala 205',
+        'notes': 'Agendamento criado pelo administrador',
+    }
+
+    response = client.post('/api/agendamentos', json=data, headers={'Authorization': f'Bearer {admin_token}'})
+    response_data = response.json()
+
+    assert response.status_code == HTTPStatus.CREATED
+    assert response_data['patient_id'] == str(patient.id)
+    assert response_data['professional_id'] == str(healthcare_professional.id)
+    assert response_data['type'] == AppointmentTypes.CONSULTATION
+    assert response_data['status'] == AppointmentStatus.SCHEDULED
+    assert response_data['estimated_duration'] == APPOINTMENT_DURATION_IN_MINUTES
+    assert response_data['location'] == 'Sala 205'
+    assert response_data['notes'] == 'Agendamento criado pelo administrador'
+
+
+def test_list_appointments_with_filters(
+    client: TestClient, patient: UserSchema, healthcare_professional: UserSchema, token: str
+) -> None:
+    APPOINTMENTS_COUNT = 3
+
+    for i in range(APPOINTMENTS_COUNT):
+        client.post(
+            '/api/agendamentos',
+            json={
+                'patient_id': str(patient.id),
+                'professional_id': str(healthcare_professional.id),
+                'date_time': (datetime.now() + timedelta(days=i + 1)).isoformat(),
+                'type': AppointmentTypes.CONSULTATION,
+                'status': AppointmentStatus.SCHEDULED,
+                'estimated_duration': 30,
+                'location': 'Sala 205',
+                'notes': f'Consulta {i}',
+            },
+            headers={'Authorization': f'Bearer {token}'},
+        )
+
+    # Lista todos os agendamentos
+    response = client.get('/api/agendamentos', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.json()) == APPOINTMENTS_COUNT
+
+
+def test_filter_by_patient_id(
+    client: TestClient, patient: UserSchema, healthcare_professional: UserSchema, token: str
+) -> None:
+    APPOINTMENT_COUNT = 2
+
+    for i in range(APPOINTMENT_COUNT):
+        client.post(
+            '/api/agendamentos',
+            json={
+                'patient_id': str(patient.id),
+                'professional_id': str(healthcare_professional.id),
+                'date_time': (datetime.now() + timedelta(days=i + 1)).isoformat(),
+                'type': AppointmentTypes.CONSULTATION,
+                'status': AppointmentStatus.SCHEDULED,
+                'estimated_duration': 30,
+                'location': 'Sala 205',
+                'notes': f'Consulta {i}',
+            },
+            headers={'Authorization': f'Bearer {token}'},
+        )
+
+    # Filtra por patient_id
+    response = client.get(f'/api/agendamentos?patient_id={patient.id}', headers={'Authorization': f'Bearer {token}'})
+    appointments = response.json()
+    assert len(appointments) == APPOINTMENT_COUNT
+    assert all(appt['patient_id'] == str(patient.id) for appt in appointments)
+
+
+def test_filter_by_date_range(
+    client: TestClient, patient: UserSchema, healthcare_professional: UserSchema, token: str
+) -> None:
+    APPOINTMENT_COUNT = 1
+
+    dates = [
+        (datetime.now() + timedelta(days=2)).isoformat(),  # Dentro do range
+        (datetime.now() + timedelta(days=5)).isoformat(),  # Fora do range
+    ]
+    for date in dates:
+        client.post(
+            '/api/agendamentos',
+            json={
+                'patient_id': str(patient.id),
+                'professional_id': str(healthcare_professional.id),
+                'date_time': date,
+                'type': AppointmentTypes.CONSULTATION,
+                'status': AppointmentStatus.SCHEDULED,
+                'estimated_duration': 30,
+                'location': 'Sala 205',
+                'notes': 'Consulta',
+            },
+            headers={'Authorization': f'Bearer {token}'},
+        )
+
+    # Filtra por intervalo de datas
+    start_date = (datetime.now() + timedelta(days=1)).isoformat()
+    end_date = (datetime.now() + timedelta(days=3)).isoformat()
+    response = client.get(
+        f'/api/agendamentos?start_date={start_date}&end_date={end_date}', headers={'Authorization': f'Bearer {token}'}
+    )
+    assert len(response.json()) == APPOINTMENT_COUNT
+
+
+def test_invalid_date_filter(client: TestClient, token: str) -> None:
+    # Data inválida
+    response = client.get('/api/agendamentos?start_date=2023-13-01', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_empty_response(client: TestClient, token: str) -> None:
+    APPOINTMENT_COUNT = 0
+
+    response = client.get(
+        '/api/agendamentos?patient_id=00000000-0000-0000-0000-000000000000',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.json()) == APPOINTMENT_COUNT
+
+
+def test_patient_cannot_list_all_appointments(
+    client: TestClient,
+    patient: UserSchema,
+    another_patient: UserSchema,
+    healthcare_professional: UserSchema,
+    token: str,
+) -> None:
+    APPOINTMENT_COUNT = 0
+
+    client.post(
+        '/api/agendamentos',
+        json={
+            'patient_id': str(another_patient.id),
+            'professional_id': str(healthcare_professional.id),
+            'date_time': (datetime.now() + timedelta(days=1)).isoformat(),
+            'type': AppointmentTypes.CONSULTATION,
+            'status': AppointmentStatus.SCHEDULED,
+            'estimated_duration': 30,
+            'location': 'Sala 205',
+            'notes': 'Consulta privada',
+        },
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    response = client.get('/api/agendamentos', headers={'Authorization': f'Bearer {token}'})
+    assert len(response.json()) == APPOINTMENT_COUNT
