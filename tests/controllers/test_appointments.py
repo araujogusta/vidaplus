@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from vidaplus.main.enums.appointment_status import AppointmentStatus
 from vidaplus.main.enums.appointment_types import AppointmentTypes
+from vidaplus.main.schemas.appointment import AppointmentSchema
 from vidaplus.main.schemas.user import UserSchema
 
 
@@ -348,3 +349,27 @@ def test_patient_cannot_list_all_appointments(
 
     response = client.get('/api/agendamentos', headers={'Authorization': f'Bearer {token}'})
     assert len(response.json()) == APPOINTMENT_COUNT
+
+
+def test_cancel_appointment(
+    client: TestClient, patient: UserSchema, appointment: AppointmentSchema, token: str
+) -> None:
+    response = client.delete(f'/api/agendamentos/{appointment.id}', headers={'Authorization': f'Bearer {token}'})
+
+    assert response.status_code == HTTPStatus.NO_CONTENT
+
+
+def test_cancel_appointment_not_found(client: TestClient, patient: UserSchema, token: str) -> None:
+    response = client.delete('/api/agendamentos/100000000', headers={'Authorization': f'Bearer {token}'})
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Agendamento não encontrado'}
+
+
+def test_cancel_appointment_unauthorized(
+    client: TestClient, patient: UserSchema, appointment: AppointmentSchema
+) -> None:
+    response = client.delete(f'/api/agendamentos/{appointment.id}')
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Not authenticated'}

@@ -22,3 +22,11 @@ class AppointmentRepositoryInterface(ABC):
         status: Optional[str] = None,
     ) -> list[AppointmentSchema]:
         pass
+
+    @abstractmethod
+    def get_by_id(self, appointment_id: int) -> AppointmentSchema | None:
+        pass
+
+    @abstractmethod
+    def cancel(self, appointment_id: int) -> None:
+        pass

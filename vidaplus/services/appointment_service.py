@@ -3,7 +3,12 @@ from typing import Optional
 from uuid import UUID
 
 from vidaplus.main.enums.roles import Roles
-from vidaplus.main.exceptions import PermissionRequiredError, SchedulingInPastError, SchedulingTimeConflictError
+from vidaplus.main.exceptions import (
+    AppointmentNotFountError,
+    PermissionRequiredError,
+    SchedulingInPastError,
+    SchedulingTimeConflictError,
+)
 from vidaplus.main.schemas.appointment import AppointmentSchema, CreateAppointmentSchema
 from vidaplus.main.schemas.user import PublicUserSchema
 from vidaplus.models.repositories.interfaces.appointment_repository_interface import AppointmentRepositoryInterface
@@ -42,6 +47,17 @@ class AppointmentService:
             type=type,
             status=status,
         )
+
+    def cancel(self, appointment_id: int, user: PublicUserSchema) -> None:
+        appointment = self.repository.get_by_id(appointment_id)
+
+        if not appointment:
+            raise AppointmentNotFountError()
+
+        if appointment.patient_id != user.id and user.role == Roles.PATIENT:
+            raise PermissionRequiredError()
+
+        self.repository.cancel(appointment_id)
 
     def has_time_conflict(self, professional_id: UUID, appointment_start: datetime, duration: int) -> bool:
         appointment_end = appointment_start + timedelta(minutes=duration)

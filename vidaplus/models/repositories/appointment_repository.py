@@ -4,6 +4,8 @@ from uuid import UUID
 
 from sqlalchemy import select
 
+from vidaplus.main.enums.appointment_status import AppointmentStatus
+from vidaplus.main.exceptions import AppointmentNotFountError
 from vidaplus.main.schemas.appointment import AppointmentSchema, CreateAppointmentSchema
 from vidaplus.models.config.connection import DatabaseConnectionHandler
 from vidaplus.models.entities.appointment import Appointment
@@ -56,6 +58,29 @@ class AppointmentRepository(AppointmentRepositoryInterface):
             try:
                 appointments = db.session.scalars(query).all()
                 return [AppointmentSchema.model_validate(appointment) for appointment in appointments]
+            except Exception as e:
+                db.session.rollback()
+                raise e
+
+    def get_by_id(self, appointment_id: int) -> AppointmentSchema | None:
+        with DatabaseConnectionHandler() as db:
+            try:
+                appointment = db.session.get(Appointment, appointment_id)
+                return AppointmentSchema.model_validate(appointment) if appointment else None
+            except Exception as e:
+                db.session.rollback()
+                raise e
+
+    def cancel(self, appointment_id: int) -> None:
+        with DatabaseConnectionHandler() as db:
+            try:
+                appointment = self.get_by_id(appointment_id)
+
+                if not appointment:
+                    raise AppointmentNotFountError()
+
+                appointment.status = AppointmentStatus.CANCELED
+                db.session.commit()
             except Exception as e:
                 db.session.rollback()
                 raise e

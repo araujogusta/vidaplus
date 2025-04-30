@@ -40,9 +40,11 @@ def get_healthcare_professional(
     return service.get_by_id(healthcare_professional_id)
 
 
-@router.get('/{healthcare_professional_id}/agendamentos', status_code=HTTPStatus.OK, response_model=list[AppointmentSchema])
+@router.get(
+    '/{healthcare_professional_id}/agendamentos', status_code=HTTPStatus.OK, response_model=list[AppointmentSchema]
+)
 def get_healthcare_professional_appointments(
-    healthcare_professional_id: UUID, 
+    healthcare_professional_id: UUID,
     current_user: PublicUserSchema = Depends(AuthService.get_current_user),
 ) -> list[AppointmentSchema]:
     repository = AppointmentRepository()

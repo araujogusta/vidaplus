@@ -42,3 +42,10 @@ def get_appointments(  # noqa: PLR0913
         type=type,
         status=status,
     )
+
+
+@router.delete('/{appointment_id}', status_code=HTTPStatus.NO_CONTENT)
+def delete_appointment(appointment_id: int, user: PublicUserSchema = Depends(AuthService.get_current_user)) -> None:
+    repository = AppointmentRepository()
+    service = AppointmentService(repository)
+    service.cancel(appointment_id, user)
