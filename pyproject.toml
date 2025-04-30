@@ -32,6 +32,7 @@ test = "pytest --cov=vidaplus -x -s . -vv"
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["migrations"]
 
 [tool.ruff.lint]
 select = ["I", "F", "W", "E", "PT", "PL"]
