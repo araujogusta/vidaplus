@@ -59,6 +59,27 @@ class AppointmentService:
 
         self.repository.cancel(appointment_id)
 
+    def update(
+        self, appointment_id: int, appointment: CreateAppointmentSchema, user: PublicUserSchema
+    ) -> AppointmentSchema:
+        appointment_to_update = self.repository.get_by_id(appointment_id)
+
+        if not appointment_to_update:
+            raise AppointmentNotFountError()
+
+        if appointment_to_update.patient_id != user.id and user.role == Roles.PATIENT:
+            raise PermissionRequiredError()
+
+        if appointment_to_update.date_time < datetime.now():
+            raise SchedulingInPastError()
+
+        if self.has_time_conflict(
+            appointment_to_update.professional_id, appointment.date_time, appointment.estimated_duration
+        ):
+            raise SchedulingTimeConflictError()
+
+        return self.repository.update(appointment_id, appointment)
+
     def has_time_conflict(self, professional_id: UUID, appointment_start: datetime, duration: int) -> bool:
         appointment_end = appointment_start + timedelta(minutes=duration)
         existing_appointments = self.repository.get(professional_id=professional_id)

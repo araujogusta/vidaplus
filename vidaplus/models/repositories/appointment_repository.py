@@ -62,6 +62,22 @@ class AppointmentRepository(AppointmentRepositoryInterface):
                 db.session.rollback()
                 raise e
 
+    def update(self, appointment_id: int, appointment: CreateAppointmentSchema) -> AppointmentSchema:
+        with DatabaseConnectionHandler() as db:
+            try:
+                appointment_db = db.session.get(Appointment, appointment_id)
+
+                for key, value in appointment.model_dump().items():
+                    setattr(appointment_db, key, value)
+
+                db.session.commit()
+                db.session.refresh(appointment_db)
+
+                return AppointmentSchema.model_validate(appointment_db)
+            except Exception as e:
+                db.session.rollback()
+                raise e
+
     def get_by_id(self, appointment_id: int) -> AppointmentSchema | None:
         with DatabaseConnectionHandler() as db:
             try:

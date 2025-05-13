@@ -49,3 +49,14 @@ def delete_appointment(appointment_id: int, user: PublicUserSchema = Depends(Aut
     repository = AppointmentRepository()
     service = AppointmentService(repository)
     service.cancel(appointment_id, user)
+
+
+@router.put('/{appointment_id}', status_code=HTTPStatus.OK, response_model=AppointmentSchema)
+def update_appointment(
+    appointment_id: int,
+    data: CreateAppointmentSchema,
+    user: PublicUserSchema = Depends(AuthService.get_current_user),
+) -> AppointmentSchema:
+    repository = AppointmentRepository()
+    service = AppointmentService(repository)
+    return service.update(appointment_id, data, user)

@@ -24,6 +24,10 @@ class AppointmentRepositoryInterface(ABC):
         pass
 
     @abstractmethod
+    def update(self, appointment_id: int, appointment: CreateAppointmentSchema) -> AppointmentSchema:
+        pass
+
+    @abstractmethod
     def get_by_id(self, appointment_id: int) -> AppointmentSchema | None:
         pass
 

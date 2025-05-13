@@ -373,3 +373,78 @@ def test_cancel_appointment_unauthorized(
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}
+
+
+def test_update_appointment(
+    client: TestClient, patient: UserSchema, appointment: AppointmentSchema, token: str
+) -> None:
+    updated_data = {
+        'patient_id': str(patient.id),
+        'professional_id': str(appointment.professional_id),
+        'date_time': (datetime.now() + timedelta(days=1)).isoformat(),
+        'type': AppointmentTypes.CONSULTATION,
+        'status': AppointmentStatus.SCHEDULED,
+        'estimated_duration': 30,
+        'location': 'Sala 205',
+        'notes': 'Consulta privada',
+    }
+
+    response = client.put(
+        f'/api/agendamentos/{appointment.id}',
+        json=updated_data,
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    data = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert data['id'] == appointment.id
+    assert data['patient_id'] == str(patient.id)
+    assert data['professional_id'] == str(appointment.professional_id)
+    assert data['date_time'] == updated_data['date_time']
+    assert data['type'] == updated_data['type']
+    assert data['status'] == updated_data['status']
+    assert data['estimated_duration'] == updated_data['estimated_duration']
+    assert data['location'] == updated_data['location']
+    assert data['notes'] == updated_data['notes']
+
+
+def test_update_appointment_not_found(client: TestClient, patient: UserSchema, token: str) -> None:
+    updated_data = {
+        'patient_id': str(patient.id),
+        'professional_id': str(patient.id),
+        'date_time': (datetime.now() + timedelta(days=1)).isoformat(),
+        'type': AppointmentTypes.CONSULTATION,
+        'status': AppointmentStatus.SCHEDULED,
+        'estimated_duration': 30,
+        'location': 'Sala 205',
+        'notes': 'Consulta privada',
+    }
+
+    response = client.put(
+        '/api/agendamentos/100000000',
+        json=updated_data,
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Agendamento não encontrado'}
+
+
+def test_update_appointment_unauthorized(
+    client: TestClient, patient: UserSchema, appointment: AppointmentSchema
+) -> None:
+    updated_data = {
+        'patient_id': str(patient.id),
+        'professional_id': str(patient.id),
+        'date_time': (datetime.now() + timedelta(days=1)).isoformat(),
+        'type': AppointmentTypes.CONSULTATION,
+        'status': AppointmentStatus.SCHEDULED,
+        'estimated_duration': 30,
+        'location': 'Sala 205',
+        'notes': 'Consulta privada',
+    }
+
+    response = client.put(f'/api/agendamentos/{appointment.id}', json=updated_data)
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Not authenticated'}
