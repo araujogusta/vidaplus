@@ -28,7 +28,7 @@ dev = [
 dev = "fastapi dev vidaplus/run.py"
 lint = "ruff check ."
 format = "ruff check . --fix && ruff format ."
-test = "pytest --cov=vidaplus -x -s . -vv"
+test = "pytest --cov=vidaplus -x -s -vv"
 
 [tool.ruff]
 line-length = 120
