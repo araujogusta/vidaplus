@@ -70,3 +70,13 @@ class UserRepository(UserRepositoryInterface):
             except Exception as ex:
                 db.session.rollback()
                 raise ex
+
+    def delete(self, user_id: UUID) -> None:
+        with DatabaseConnectionHandler() as db:
+            try:
+                user = db.session.get(User, user_id)
+                db.session.delete(user)
+                db.session.commit()
+            except Exception as ex:
+                db.session.rollback()
+                raise ex

@@ -40,3 +40,10 @@ def update_patient(
     user_repository = UserRepository()
     user_service = UserService(user_repository)
     return user_service.update(patient_id, data, executor)
+
+
+@router.delete('/{patient_id}', status_code=HTTPStatus.NO_CONTENT)
+def delete_patient(patient_id: UUID, executor: PublicUserSchema = Depends(AuthService.get_current_user)) -> None:
+    user_repository = UserRepository()
+    user_service = UserService(user_repository)
+    user_service.delete(patient_id, executor)

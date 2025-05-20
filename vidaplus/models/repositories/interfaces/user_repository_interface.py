@@ -26,3 +26,7 @@ class UserRepositoryInterface(ABC):
     @abstractmethod
     def update(self, user_id: UUID, user: CreateUserSchema) -> UserSchema:
         pass
+
+    @abstractmethod
+    def delete(self, user_id: UUID) -> None:
+        pass

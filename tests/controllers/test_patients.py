@@ -118,7 +118,12 @@ def test_get_patient_by_id_with_invalid_id(client: TestClient) -> None:
 
 
 def test_update_patient_success(client: TestClient, patient: UserSchema, token: str) -> None:
-    update_data = {'name': 'John Updated', 'email': 'john.updated@example.com', 'password': 'newpassword', 'role': Roles.PATIENT}
+    update_data = {
+        'name': 'John Updated',
+        'email': 'john.updated@example.com',
+        'password': 'newpassword',
+        'role': Roles.PATIENT,
+    }
     response = client.put(
         f'/api/pacientes/{patient.id}', headers={'Authorization': f'Bearer {token}'}, json=update_data
     )
