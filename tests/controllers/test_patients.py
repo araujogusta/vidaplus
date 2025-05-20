@@ -115,3 +115,44 @@ def test_get_patient_by_id_with_invalid_id(client: TestClient) -> None:
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response_data['detail'] == 'Usuário não encontrado'
+
+
+def test_update_patient_success(client: TestClient, patient: UserSchema, token: str) -> None:
+    update_data = {'name': 'John Updated', 'email': 'john.updated@example.com', 'password': 'newpassword', 'role': Roles.PATIENT}
+    response = client.put(
+        f'/api/pacientes/{patient.id}', headers={'Authorization': f'Bearer {token}'}, json=update_data
+    )
+    data = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert data['id'] == str(patient.id)
+    assert data['name'] == 'John Updated'
+    assert data['email'] == 'john.updated@example.com'
+
+
+def test_update_patient_cannot_change_role(client: TestClient, patient: UserSchema, token: str) -> None:
+    update_data = {'name': 'John Doe', 'email': 'johndoe@example.com', 'password': 'ilovepotatos', 'role': Roles.ADMIN}
+    response = client.put(
+        f'/api/pacientes/{patient.id}', headers={'Authorization': f'Bearer {token}'}, json=update_data
+    )
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_delete_patient_success(client: TestClient, another_patient: UserSchema, admin_token: str) -> None:
+    response = client.delete(f'/api/pacientes/{another_patient.id}', headers={'Authorization': f'Bearer {admin_token}'})
+    assert response.status_code == HTTPStatus.NO_CONTENT
+
+    get_response = client.get(f'/api/pacientes/{another_patient.id}')
+    assert get_response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_delete_patient_unauthorized(client: TestClient, patient: UserSchema, token: str) -> None:
+    response = client.delete(f'/api/pacientes/{patient.id}', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code in {HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN}
+
+
+def test_delete_patient_not_found(client: TestClient, admin_token: str) -> None:
+    response = client.delete(
+        '/api/pacientes/00000000-0000-0000-0000-000000000000', headers={'Authorization': f'Bearer {admin_token}'}
+    )
+    assert response.status_code == HTTPStatus.NOT_FOUND
