@@ -56,7 +56,7 @@ class UserService:
             if not executor.role == Roles.ADMIN and user.id != executor.id:
                 raise PermissionRequiredError()
 
-            if executor.role not in [Roles.ADMIN, Roles.HEALTHCARE_PROFESSIONAL] and not user.role == data.role:
+            if not executor.role == Roles.ADMIN and not user.role == data.role:
                 raise PermissionRequiredError()
 
             user = self.repository.update(user_id, data)
