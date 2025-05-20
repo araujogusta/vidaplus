@@ -46,6 +46,25 @@ class UserService:
         except Exception as e:
             raise e
 
+    def update(self, user_id: UUID, data: CreateUserSchema, executor: PublicUserSchema) -> PublicUserSchema:
+        try:
+            user = self.repository.get_by_id(user_id)
+
+            if not user:
+                raise UserNotFoundError()
+
+            if not executor.role == Roles.ADMIN and user.id != executor.id:
+                raise PermissionRequiredError()
+            
+            if not executor.role in [Roles.ADMIN, Roles.HEALTHCARE_PROFESSIONAL] and not user.role == data.role:
+                raise PermissionRequiredError()
+
+            user = self.repository.update(user_id, data)
+
+            return PublicUserSchema(**user.model_dump())
+        except Exception as e:
+            raise e
+
     def authenticate(self, email: str, password: str) -> str:
         user = self.repository.get_by_email(email)
 

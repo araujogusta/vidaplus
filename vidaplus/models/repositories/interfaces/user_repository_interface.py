@@ -22,3 +22,7 @@ class UserRepositoryInterface(ABC):
     @abstractmethod
     def get_by_id(self, user_id: UUID) -> UserSchema | None:
         pass
+
+    @abstractmethod
+    def update(self, user_id: UUID, user: CreateUserSchema) -> UserSchema:
+        pass

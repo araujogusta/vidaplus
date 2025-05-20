@@ -54,3 +54,19 @@ class UserRepository(UserRepositoryInterface):
             except Exception as ex:
                 db.session.rollback()
                 raise ex
+
+    def update(self, user_id: UUID, user: CreateUserSchema) -> UserSchema:
+        with DatabaseConnectionHandler() as db:
+            try:
+                user_db = db.session.get(User, user_id)
+
+                for k, v in user.model_dump().items():
+                    setattr(user_db, k, v)
+
+                db.session.commit()
+                db.session.refresh(user_db)
+
+                return UserSchema.model_validate(user_db)
+            except Exception as ex:
+                db.session.rollback()
+                raise ex
