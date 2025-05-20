@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 
 from vidaplus.main.enums.roles import Roles
 from vidaplus.main.schemas.appointment import AppointmentSchema
-from vidaplus.main.schemas.user import PublicUserSchema, RequestCreateUserSchema
+from vidaplus.main.schemas.user import CreateUserSchema, PublicUserSchema, RequestCreateUserSchema
 from vidaplus.models.repositories.appointment_repository import AppointmentRepository
 from vidaplus.models.repositories.user_repository import UserRepository
 from vidaplus.services.appointment_service import AppointmentService
@@ -38,6 +38,17 @@ def get_healthcare_professional(
     repository = UserRepository()
     service = UserService(repository)
     return service.get_by_id(healthcare_professional_id)
+
+
+@router.put('/{healthcare_professional_id}', status_code=HTTPStatus.OK, response_model=PublicUserSchema)
+def update_healthcare_professional(
+    healthcare_professional_id: UUID,
+    data: CreateUserSchema,
+    executor: PublicUserSchema = Depends(AuthService.get_current_user),
+) -> PublicUserSchema:
+    repository = UserRepository()
+    service = UserService(repository)
+    return service.update(healthcare_professional_id, data, executor)
 
 
 @router.get(
