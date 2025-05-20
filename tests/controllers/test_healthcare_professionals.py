@@ -143,3 +143,86 @@ def test_list_healthcare_professional_appointments(
     assert appt['professional_id'] == str(appointment.professional_id)
     assert appt['created_at'] == appointment.created_at.isoformat()
     assert appt['updated_at'] == appointment.updated_at.isoformat()
+
+
+def test_update_professional_success(
+    client: TestClient, healthcare_professional: UserSchema, healthcare_professional_token: str
+) -> None:
+    update_data = {
+        'name': 'Dr. Updated',
+        'email': 'dr.updated@example.com',
+        'password': 'newstrongpass',
+        'role': Roles.HEALTHCARE_PROFESSIONAL,
+    }
+    response = client.put(
+        f'/api/profissionais/{healthcare_professional.id}',
+        headers={'Authorization': f'Bearer {healthcare_professional_token}'},
+        json=update_data,
+    )
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+    assert data['id'] == str(healthcare_professional.id)
+    assert data['name'] == 'Dr. Updated'
+    assert data['email'] == 'dr.updated@example.com'
+
+
+def test_update_professional_cannot_change_role(
+    client: TestClient, healthcare_professional: UserSchema, healthcare_professional_token: str
+) -> None:
+    update_data = {'name': 'Dr. Locked', 'email': 'locked@example.com', 'password': 'pw', 'role': Roles.ADMIN}
+    response = client.put(
+        f'/api/profissionais/{healthcare_professional.id}',
+        headers={'Authorization': f'Bearer {healthcare_professional_token}'},
+        json=update_data,
+    )
+    assert response.status_code in {HTTPStatus.UNPROCESSABLE_ENTITY, HTTPStatus.FORBIDDEN}
+
+
+def test_update_professional_unauthorized(client: TestClient, healthcare_professional: UserSchema) -> None:
+    update_data = {'name': 'Unauthorized', 'email': 'unauth@example.com', 'password': 'pw'}
+    response = client.put(f'/api/profissionais/{healthcare_professional.id}', json=update_data)
+    assert response.status_code in {HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN}
+
+
+def test_update_professional_not_found(client: TestClient, healthcare_professional_token: str) -> None:
+    update_data = {
+        'name': 'No One',
+        'email': 'noone@example.com',
+        'password': 'pw',
+        'role': Roles.HEALTHCARE_PROFESSIONAL,
+    }
+    fake_id = '00000000-0000-0000-0000-000000000000'
+    response = client.put(
+        f'/api/profissionais/{fake_id}',
+        headers={'Authorization': f'Bearer {healthcare_professional_token}'},
+        json=update_data,
+    )
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_delete_professional_success(
+    client: TestClient, another_healthcare_professional: UserSchema, admin_token: str
+) -> None:
+    response = client.delete(
+        f'/api/profissionais/{another_healthcare_professional.id}', headers={'Authorization': f'Bearer {admin_token}'}
+    )
+    assert response.status_code == HTTPStatus.NO_CONTENT
+
+    get_response = client.get(f'/api/profissionais/{another_healthcare_professional.id}', headers={'Authorization': f'Bearer {admin_token}'})
+    assert get_response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_delete_professional_unauthorized(
+    client: TestClient, healthcare_professional: UserSchema, healthcare_professional_token: str
+) -> None:
+    response = client.delete(
+        f'/api/profissionais/{healthcare_professional.id}',
+        headers={'Authorization': f'Bearer {healthcare_professional_token}'},
+    )
+    assert response.status_code in {HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN}
+
+
+def test_delete_professional_not_found(client: TestClient, admin_token: str) -> None:
+    fake_id = '00000000-0000-0000-0000-000000000000'
+    response = client.delete(f'/api/profissionais/{fake_id}', headers={'Authorization': f'Bearer {admin_token}'})
+    assert response.status_code == HTTPStatus.NOT_FOUND
