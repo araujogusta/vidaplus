@@ -208,7 +208,9 @@ def test_delete_professional_success(
     )
     assert response.status_code == HTTPStatus.NO_CONTENT
 
-    get_response = client.get(f'/api/profissionais/{another_healthcare_professional.id}', headers={'Authorization': f'Bearer {admin_token}'})
+    get_response = client.get(
+        f'/api/profissionais/{another_healthcare_professional.id}', headers={'Authorization': f'Bearer {admin_token}'}
+    )
     assert get_response.status_code == HTTPStatus.NOT_FOUND
 
 
