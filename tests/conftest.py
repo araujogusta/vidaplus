@@ -184,3 +184,8 @@ def appointment(engine: Engine, patient: UserSchema, healthcare_professional: Us
 def date_in_future() -> str:
     future_date = datetime.now() + timedelta(days=random.randint(1, 30))
     return future_date.isoformat()
+
+
+@pytest.fixture
+def unit_payload() -> dict:
+    return {'name': 'Unidade Central', 'address': 'Av. Principal, 123'}
