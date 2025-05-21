@@ -80,3 +80,10 @@ class UnitNotFoundError(ApplicationError):
 
     def __init__(self) -> None:
         super().__init__('Unidade não encontrada')
+
+
+class BedNotFoundError(ApplicationError):
+    code = HTTPStatus.NOT_FOUND
+
+    def __init__(self) -> None:
+        super().__init__('Leito não encontrado')
