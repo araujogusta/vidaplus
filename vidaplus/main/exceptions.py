@@ -73,3 +73,10 @@ class AppointmentNotFountError(ApplicationError):
 
     def __init__(self) -> None:
         super().__init__('Agendamento não encontrado')
+
+
+class UnitNotFoundError(ApplicationError):
+    code = HTTPStatus.NOT_FOUND
+
+    def __init__(self) -> None:
+        super().__init__('Unidade não encontrada')
