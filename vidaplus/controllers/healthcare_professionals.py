@@ -51,6 +51,16 @@ def update_healthcare_professional(
     return service.update(healthcare_professional_id, data, executor)
 
 
+@router.delete('/{healthcare_professional_id}', status_code=HTTPStatus.NO_CONTENT)
+def delete_healthcare_professional(
+    healthcare_professional_id: UUID,
+    executor: PublicUserSchema = Depends(AuthService.get_current_user),
+) -> None:
+    repository = UserRepository()
+    service = UserService(repository)
+    service.delete(healthcare_professional_id, executor)
+
+
 @router.get(
     '/{healthcare_professional_id}/agendamentos', status_code=HTTPStatus.OK, response_model=list[AppointmentSchema]
 )
