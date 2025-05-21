@@ -30,7 +30,7 @@ class BedService:
 
         if not bed:
             raise BedNotFoundError()
-        
+
         return bed
 
     def update(self, bed_id: int, bed: CreateBedSchema, executor: PublicUserSchema) -> BedSchema:
@@ -46,7 +46,7 @@ class BedService:
     def delete(self, bed_id: int, executor: PublicUserSchema) -> None:
         if not executor.role == Roles.ADMIN:
             raise PermissionRequiredError()
-        
+
         bed = self.bed_repository.get_by_id(bed_id)
         if not bed:
             raise BedNotFoundError()

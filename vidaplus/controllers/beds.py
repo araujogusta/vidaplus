@@ -37,7 +37,9 @@ def create_bed(bed: CreateBedSchema, creator: PublicUserSchema = Depends(AuthSer
 
 
 @router.put('/{bed_id}', status_code=HTTPStatus.OK, response_model=BedSchema)
-def update_bed(bed_id: int, bed: CreateBedSchema, executor: PublicUserSchema = Depends(AuthService.get_current_user)) -> BedSchema:
+def update_bed(
+    bed_id: int, bed: CreateBedSchema, executor: PublicUserSchema = Depends(AuthService.get_current_user)
+) -> BedSchema:
     bed_repo = BedRepository()
     unit_repo = UnitRepository()
     service = BedService(bed_repo, unit_repo)
