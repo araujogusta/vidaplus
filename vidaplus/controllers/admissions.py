@@ -44,5 +44,5 @@ def update(
 
 
 @router.delete('/{admission_id}', status_code=HTTPStatus.NO_CONTENT)
-def delete(admission_id: int) -> None:
-    service.delete(admission_id)
+def delete(admission_id: int, executor: PublicUserSchema = Depends(AuthService.get_current_user)) -> None:
+    service.delete(admission_id, executor)

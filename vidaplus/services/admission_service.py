@@ -64,7 +64,10 @@ class AdmissionService:
 
         return self.admission_repository.update(admission_id, data)
 
-    def delete(self, admission_id: int) -> None:
+    def delete(self, admission_id: int, executor: PublicUserSchema) -> None:
+        if not executor.role == Roles.ADMIN:
+            raise PermissionRequiredError()
+
         admission = self.admission_repository.get_by_id(admission_id)
 
         if not admission:
