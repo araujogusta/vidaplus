@@ -9,6 +9,7 @@ from vidaplus.models.config.base import Base
 
 if TYPE_CHECKING:
     from vidaplus.models.entities.bed import Bed
+    from vidaplus.models.entities.supply import Supply
 
 
 class Unit(Base):
@@ -20,6 +21,12 @@ class Unit(Base):
 
     beds: Mapped[list['Bed']] = relationship(
         'Bed',
+        back_populates='unit',
+        cascade='all, delete-orphan',
+        lazy='selectin',
+    )
+    supplies: Mapped[list['Supply']] = relationship(
+        'Supply',
         back_populates='unit',
         cascade='all, delete-orphan',
         lazy='selectin',
