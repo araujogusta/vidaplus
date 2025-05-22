@@ -11,6 +11,7 @@ from vidaplus.main.enums.roles import Roles
 from vidaplus.models.config.base import Base
 
 if TYPE_CHECKING:
+    from vidaplus.models.entities.admission import Admission
     from vidaplus.models.entities.appointment import Appointment
 
 
@@ -27,6 +28,10 @@ class User(Base):
     patient_appointments: Mapped[list['Appointment']] = relationship(
         'Appointment', back_populates='patient', foreign_keys='[Appointment.patient_id]', cascade='all, delete-orphan'
     )
+    patient_admissions: Mapped['Admission'] = relationship(
+        'Admission', back_populates='patient', foreign_keys='[Admission.patient_id]', cascade='all, delete-orphan'
+    )
+
     professional_appointments: Mapped[list['Appointment']] = relationship(
         'Appointment',
         back_populates='professional',
