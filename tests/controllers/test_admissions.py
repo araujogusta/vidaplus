@@ -127,11 +127,6 @@ def test_update_admission_success(client: TestClient, admin_token: str, patient:
     assert 'discharged_at' in data
 
 
-def test_delete_admission_method_not_allowed(client: TestClient, admin_token: str) -> None:
-    resp = client.delete('/api/internacoes/1', headers={'Authorization': f'Bearer {admin_token}'})
-    assert resp.status_code == HTTPStatus.NOT_FOUND
-
-
 def test_delete_admission_not_found(client: TestClient, admin_token: str) -> None:
     resp = client.delete('/api/internacoes/9999', headers={'Authorization': f'Bearer {admin_token}'})
     assert resp.status_code == HTTPStatus.NOT_FOUND
@@ -148,3 +143,15 @@ def test_delete_admission_success(client: TestClient, admin_token: str, patient:
 
     resp = client.get(f'/api/internacoes/{adm["id"]}')
     assert resp.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_delete_admission_forbidden_for_non_admin(
+    client: TestClient, token: str, admin_token: str, patient: UserSchema, bed: BedSchema
+) -> None:
+    adm = client.post(
+        '/api/internacoes/',
+        headers={'Authorization': f'Bearer {admin_token}'},
+        json={'patient_id': str(patient.id), 'bed_id': bed.id},
+    ).json()
+    resp = client.delete(f'/api/internacoes/{adm["id"]}', headers={'Authorization': f'Bearer {token}'})
+    assert resp.status_code == HTTPStatus.FORBIDDEN
