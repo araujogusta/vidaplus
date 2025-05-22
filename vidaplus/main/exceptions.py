@@ -87,3 +87,17 @@ class BedNotFoundError(ApplicationError):
 
     def __init__(self) -> None:
         super().__init__('Leito não encontrado')
+
+
+class AdmissionNotFoundError(ApplicationError):
+    code = HTTPStatus.NOT_FOUND
+
+    def __init__(self) -> None:
+        super().__init__('Internação não encontrada')
+
+
+class BedNotAvailableError(ApplicationError):
+    code = HTTPStatus.CONFLICT
+
+    def __init__(self) -> None:
+        super().__init__('Leito não disponível')
