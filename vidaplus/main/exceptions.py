@@ -96,6 +96,13 @@ class AdmissionNotFoundError(ApplicationError):
         super().__init__('Internação não encontrada')
 
 
+class SupplyNotFoundError(ApplicationError):
+    code = HTTPStatus.NOT_FOUND
+
+    def __init__(self) -> None:
+        super().__init__('Internação não encontrada')
+
+
 class BedNotAvailableError(ApplicationError):
     code = HTTPStatus.CONFLICT
 
