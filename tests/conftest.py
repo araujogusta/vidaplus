@@ -11,10 +11,14 @@ from vidaplus.main.enums.appointment_types import AppointmentTypes
 from vidaplus.main.enums.roles import Roles
 from vidaplus.main.schemas.appointment import AppointmentSchema
 from vidaplus.main.schemas.auth import ResponseAuthToken
+from vidaplus.main.schemas.bed import BedSchema
+from vidaplus.main.schemas.unit import UnitSchema
 from vidaplus.main.schemas.user import UserSchema
 from vidaplus.models.config.base import Base
 from vidaplus.models.config.connection import DatabaseConnectionHandler
 from vidaplus.models.entities.appointment import Appointment
+from vidaplus.models.entities.bed import Bed
+from vidaplus.models.entities.unit import Unit
 from vidaplus.models.entities.user import User
 from vidaplus.run import app
 from vidaplus.settings import Settings
@@ -189,3 +193,23 @@ def date_in_future() -> str:
 @pytest.fixture
 def unit_payload() -> dict:
     return {'name': 'Unidade Central', 'address': 'Av. Principal, 123'}
+
+
+@pytest.fixture
+def unit(engine: Engine) -> UnitSchema:
+    u = Unit(name='Unidade Fixture', address='Rua Fixture, 1')
+    with DatabaseConnectionHandler() as db:
+        db.session.add(u)
+        db.session.commit()
+        db.session.refresh(u)
+    return UnitSchema.model_validate(u)
+
+
+@pytest.fixture
+def bed(engine: Engine, unit: UnitSchema) -> BedSchema:
+    b = Bed(unit_id=unit.id, type='STANDARD', status='AVAILABLE')
+    with DatabaseConnectionHandler() as db:
+        db.session.add(b)
+        db.session.commit()
+        db.session.refresh(b)
+    return BedSchema.model_validate(b)
