@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 
-from vidaplus.controllers import admissions, appointments, auth, beds, healthcare_professionals, patients, units
+from vidaplus.controllers import admissions, appointments, auth, beds, healthcare_professionals, patients, stock, units
 from vidaplus.main.exceptions import ApplicationError
 
 app = FastAPI(title='SSGHSS VidaPlus')
@@ -10,6 +10,7 @@ app.include_router(auth.router)
 app.include_router(beds.router)
 app.include_router(healthcare_professionals.router)
 app.include_router(patients.router)
+app.include_router(stock.router)
 app.include_router(units.router)
 
 
