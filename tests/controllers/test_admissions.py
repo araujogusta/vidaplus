@@ -48,22 +48,19 @@ def test_create_admission_success(client: TestClient, admin_token: str, patient:
     assert 'admitted_at' in data
 
 
-
-def test_create_admission_bed_unavailable(client: TestClient, admin_token: str, patient: UserSchema, bed: BedSchema) -> None:
+def test_create_admission_bed_unavailable(
+    client: TestClient, admin_token: str, patient: UserSchema, bed: BedSchema
+) -> None:
     with DatabaseConnectionHandler() as db:
         bed_obj = db.session.get(Bed, bed.id)
 
-        if bed_obj is None: return
+        if bed_obj:
+            bed_obj.status = BedStatus.OCCUPIED
 
-        bed_obj.status = BedStatus.OCCUPIED
         db.session.commit()
 
-    payload = {"patient_id": str(patient.id), "bed_id": bed.id}
-    response = client.post(
-        "/api/internacoes/",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        json=payload
-    )
+    payload = {'patient_id': str(patient.id), 'bed_id': bed.id}
+    response = client.post('/api/internacoes/', headers={'Authorization': f'Bearer {admin_token}'}, json=payload)
     assert response.status_code == HTTPStatus.CONFLICT
 
 
